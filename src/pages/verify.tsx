@@ -1,4 +1,4 @@
-import { CredentialType, IDKitWidget, useIDKit } from "@worldcoin/idkit";
+import { IDKitWidget, useIDKit } from "@worldcoin/idkit";
 import { ISuccessResult, VerificationLevel } from "@worldcoin/idkit";
 import type { VerifyReply } from "./api/verify";
 import { useRouter } from "next/dist/client/router";
