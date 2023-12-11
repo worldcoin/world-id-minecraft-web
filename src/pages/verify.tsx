@@ -1,22 +1,26 @@
-import { CredentialType, IDKitWidget } from "@worldcoin/idkit";
-import type { ISuccessResult } from "@worldcoin/idkit";
+import { CredentialType, IDKitWidget, useIDKit } from "@worldcoin/idkit";
+import { ISuccessResult, VerificationLevel } from "@worldcoin/idkit";
 import type { VerifyReply } from "./api/verify";
 import { useRouter } from "next/dist/client/router";
 import { useEffect, useState } from "react";
 
 export default function Home() {
 	const router = useRouter();
-	const [app_id, setAppId] = useState("");
+	const [app_id, setAppId] = useState("app_" as `app_${string}`);
 	const [id, setId] = useState("");
+
+	const IDKit = useIDKit();
 
 	useEffect(() => {
 		const params = router.query;
-		setAppId(params.app_id as string);
+		setAppId(params.app_id as `app_${string}`);
 		setId(params.id as string);
+		IDKit.setOpen(true);
 	}, [router.isReady]);
 
+
 	const onSuccess = (result: ISuccessResult) => {
-		window.alert("Successfully verified with World ID! Your nullifier hash is: " + result.nullifier_hash);
+		window.close();
 	};
 
 	const handleProof = async (result: ISuccessResult) => {
@@ -24,7 +28,7 @@ export default function Home() {
 			merkle_root: result.merkle_root,
 			nullifier_hash: result.nullifier_hash,
 			proof: result.proof,
-			credential_type: result.credential_type,
+			credential_type: result.verification_level == VerificationLevel.Orb ? CredentialType.Orb : CredentialType.Device,
 			action: process.env.NEXT_PUBLIC_WLD_ACTION_NAME,
 			app_id: app_id,
 			uuid: id,
@@ -38,23 +42,21 @@ export default function Home() {
 		})
 		const data: VerifyReply = await res.json()
 		if (res.status !== 200) {
-			throw new Error(`Error code ${res.status} (${data.code}): ${data.detail}` ?? "Unknown error."); // Throw an error if verification fails
+			throw new Error(data.toString()); // Throw an error if verification fails
 		}
 	};
 
 	return (
 		<div>
 			<div className="flex flex-col items-center justify-center align-middle h-screen">
-				<p className="text-2xl mb-5">Minecraft World ID</p>
+				{/* <p className="text-2xl mb-5">Minecraft World ID</p> */}
 				<IDKitWidget
 					action={process.env.NEXT_PUBLIC_WLD_ACTION_NAME!}
 					app_id={app_id}
 					signal={id}
+					verification_level={VerificationLevel.Lite}
 					onSuccess={onSuccess}
 					handleVerify={handleProof}
-					credential_types={[CredentialType.Orb, CredentialType.Phone]}
-					autoClose
-					walletConnectProjectId={process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID!}
 				>
 					{({ open }) => 
 						<button className="border border-black rounded-md" onClick={open}>

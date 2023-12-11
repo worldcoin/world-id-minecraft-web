@@ -44,7 +44,7 @@ export default function handler(
         .on('error', err => console.log('Redis Client Error', err))
         .connect();
       if (verifyRes.status == 200) {
-        client.set(uuid, wldResponse.nullifier_hash, { 'EX': 60 * 60 * 24 });
+        client.set(uuid, wldResponse.credential_type, { 'EX': 60 * 60 });
         res.status(verifyRes.status).send({
           code: "success",
           detail: "This action verified correctly!",
