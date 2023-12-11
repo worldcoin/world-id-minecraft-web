@@ -24,7 +24,7 @@ export default function handler(
     nullifier_hash: req.body.nullifier_hash,
     merkle_root: req.body.merkle_root,
     proof: req.body.proof,
-    verification_level: req.body.verification_level,
+    credential_type: "orb",
     action: req.body.action,
     signal: uuid,
   };
