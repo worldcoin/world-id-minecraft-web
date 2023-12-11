@@ -1,5 +1,5 @@
-import { CredentialType, IDKitWidget } from "@worldcoin/idkit";
-import type { ISuccessResult } from "@worldcoin/idkit";
+import { CredentialType, IDKitWidget, useIDKit } from "@worldcoin/idkit";
+import { ISuccessResult, VerificationLevel } from "@worldcoin/idkit";
 import type { VerifyReply } from "./api/verify";
 import { useRouter } from "next/dist/client/router";
 import { useEffect, useState } from "react";
@@ -9,10 +9,13 @@ export default function Home() {
 	const [app_id, setAppId] = useState("");
 	const [id, setId] = useState("");
 
+	const IDKit = useIDKit();
+
 	useEffect(() => {
 		const params = router.query;
 		setAppId(params.app_id as string);
 		setId(params.id as string);
+		IDKit.setOpen(true);
 	}, [router.isReady]);
 
 	const onSuccess = (result: ISuccessResult) => {
@@ -24,7 +27,7 @@ export default function Home() {
 			merkle_root: result.merkle_root,
 			nullifier_hash: result.nullifier_hash,
 			proof: result.proof,
-			credential_type: result.credential_type,
+			verification_level: result.verification_level,
 			action: process.env.NEXT_PUBLIC_WLD_ACTION_NAME,
 			app_id: app_id,
 			uuid: id,
@@ -48,13 +51,12 @@ export default function Home() {
 				<p className="text-2xl mb-5">Minecraft World ID</p>
 				<IDKitWidget
 					action={process.env.NEXT_PUBLIC_WLD_ACTION_NAME!}
-					app_id={app_id}
+					app_id={app_id as `app_${string}`}
 					signal={id}
 					onSuccess={onSuccess}
 					handleVerify={handleProof}
-					credential_types={[CredentialType.Orb, CredentialType.Phone]}
+					verification_level={VerificationLevel.Lite}
 					autoClose
-					walletConnectProjectId={process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID!}
 				>
 					{({ open }) => 
 						<button className="border border-black rounded-md" onClick={open}>
