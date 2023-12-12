@@ -24,7 +24,7 @@ export default function handler(
     nullifier_hash: req.body.nullifier_hash,
     merkle_root: req.body.merkle_root,
     proof: req.body.proof,
-    credential_type: "orb",
+    verification_level: req.body.verification_level,
     action: req.body.action,
     signal: uuid,
   };
@@ -44,7 +44,7 @@ export default function handler(
         .on('error', err => console.log('Redis Client Error', err))
         .connect();
       if (verifyRes.status == 200) {
-        client.set(uuid, wldResponse.nullifier_hash, { 'EX': 60 * 60 * 24 });
+        client.set(uuid, req.body.verification_level, { 'EX': 60 * 15 });
         res.status(verifyRes.status).send({
           code: "success",
           detail: "This action verified correctly!",

@@ -55,7 +55,7 @@ export default function Home() {
 					signal={id}
 					onSuccess={onSuccess}
 					handleVerify={handleProof}
-					verification_level={VerificationLevel.Orb}
+					verification_level={VerificationLevel.Device}
 					autoClose
 				>
 					{({ open }) => 
