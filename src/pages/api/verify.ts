@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { createClient } from 'redis';
+import { createClient } from "redis";
 
 export const config = {
   api: {
@@ -16,46 +16,42 @@ export default function handler(
   req: NextApiRequest,
   res: NextApiResponse<VerifyReply>
 ) {
-  const body = req.body;
-  console.log("Received request to verify credential:\n", req.body);
-  const verifyEndpoint = `${process.env.NEXT_PUBLIC_WLD_API_BASE_URL}/api/v1/verify/${req.body.app_id}`;
-  const uuid = req.body.uuid;
+  const verifyEndpoint = `${process.env.NEXT_PUBLIC_WLD_API_BASE_URL}/api/v1/verify/${process.env.NEXT_PUBLIC_APP_ID}`;
+  const req_uuid = req.body.signal;
   const reqBody = {
     nullifier_hash: req.body.nullifier_hash,
     merkle_root: req.body.merkle_root,
     proof: req.body.proof,
-    credential_type: req.body.credential_type,
+    verification_level: req.body.verification_level,
     action: req.body.action,
-    signal: uuid,
+    signal: req.body.signal,
   };
-  console.log("Sending request to World ID /verify endpoint:\n", reqBody);
   fetch(verifyEndpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(reqBody),
-  }).then((verifyRes) => {
-    verifyRes.json().then(async (wldResponse) => {
-      const client = await createClient({
-        url: process.env.REDIS_URL, 
-        socket: { tls: true }
-      })
-        .on('error', err => console.log('Redis Client Error', err))
-        .connect();
-      if (verifyRes.status == 200) {
-        client.set(uuid, wldResponse.credential_type, { 'EX': 60 * 60 });
-        res.status(verifyRes.status).send({
-          code: "success",
-          detail: "This action verified correctly!",
-        });
-      } else {
-        // This is where you should handle errors from the World ID /verify endpoint. Usually these errors are due to an invalid credential or a credential that has already been used.
-        // For this example, we'll just return the error code and detail from the World ID /verify endpoint.
-        res
-          .status(verifyRes.status)
-          .send({ code: wldResponse.code, detail: wldResponse.detail });
-      }
-    });
+  }).then(async (verifyRes) => {
+    const response = await verifyRes.json();
+    const client = await createClient({
+      url: process.env.REDIS_URL,
+      socket: { tls: true },
+    })
+      .on("error", (err) => console.error("Redis Client Error", err))
+      .connect();
+    if (verifyRes.status == 200) {
+      client.set(req_uuid, req.body.verification_level, { EX: 60 * 15 });
+      res.status(200).send({
+        code: "success",
+        detail: "This action verified correctly!",
+      });
+    } else {
+      // This is where you should handle errors from the World ID /verify endpoint. Usually these errors are due to an invalid credential or a credential that has already been used.
+      // For this example, we'll just return the error code and detail from the World ID /verify endpoint.
+      res
+        .status(verifyRes.status)
+        .send({ code: response.code, detail: response.detail });
+    }
   });
 }
