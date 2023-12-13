@@ -35,7 +35,7 @@ export default function handler(
     },
     body: JSON.stringify(reqBody),
   }).then(async (verifyRes) => {
-    const response = verifyRes.json();
+    const response = await verifyRes.json();
     const client = await createClient({
       url: process.env.REDIS_URL,
       socket: { tls: true },
