@@ -12,15 +12,15 @@ export default async function handler(
   res: NextApiResponse
 ) {
   console.log("url: ", req.url)
-  const uuid = req.query.id as string;
-  console.log("uuid: ", uuid)
+  const req_uuid = req.query.id as string;
+  console.log("req_uuid: ", req_uuid)
   const client = await createClient({
     url: process.env.REDIS_URL, 
     socket: { tls: true }
   })
     .on('error', err => console.log('Redis Client Error', err))
     .connect();
-  const cred = await client.get(uuid);
+  const cred = await client.get(req_uuid);
   if (cred) {
     res.status(200).send(cred);
   } else {
