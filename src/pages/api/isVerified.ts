@@ -22,6 +22,7 @@ export default async function handler(
     .connect();
   const cred = await client.get(req_uuid);
   if (cred) {
+    console.log("cred: ", cred)
     res.status(200).send(cred);
   } else {
     res.status(404).send({ code: "not_found", detail: "This credential has not been verified!" });

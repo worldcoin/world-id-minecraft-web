@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { createClient } from 'redis';
+import { createClient } from "redis";
 
 export const config = {
   api: {
@@ -34,27 +34,26 @@ export default function handler(
       "Content-Type": "application/json",
     },
     body: JSON.stringify(reqBody),
-  }).then((verifyRes) => {
-    verifyRes.json().then(async (wldResponse) => {
-      const client = await createClient({
-        url: process.env.REDIS_URL, 
-        socket: { tls: true }
-      })
-        .on('error', err => console.log('Redis Client Error', err))
-        .connect();
-      if (verifyRes.status == 200) {
-        client.set(req_uuid, req.body.verification_level, { 'EX': 60 * 15 });
-        res.status(200).send({
-          code: "success",
-          detail: "This action verified correctly!",
-        });
-      } else {
-        // This is where you should handle errors from the World ID /verify endpoint. Usually these errors are due to an invalid credential or a credential that has already been used.
-        // For this example, we'll just return the error code and detail from the World ID /verify endpoint.
-        res
-          .status(verifyRes.status)
-          .send({ code: wldResponse.code, detail: wldResponse.detail });
-      }
-    });
+  }).then(async (verifyRes) => {
+    const response = verifyRes.json();
+    const client = await createClient({
+      url: process.env.REDIS_URL,
+      socket: { tls: true },
+    })
+      .on("error", (err) => console.log("Redis Client Error", err))
+      .connect();
+    if (verifyRes.status == 200) {
+      client.set(req_uuid, req.body.verification_level, { EX: 60 * 15 });
+      res.status(200).send({
+        code: "success",
+        detail: "This action verified correctly!",
+      });
+    } else {
+      // This is where you should handle errors from the World ID /verify endpoint. Usually these errors are due to an invalid credential or a credential that has already been used.
+      // For this example, we'll just return the error code and detail from the World ID /verify endpoint.
+      res
+        .status(verifyRes.status)
+        .send({ code: response.code, detail: response.detail });
+    }
   });
 }
