@@ -55,6 +55,7 @@ export default function Home() {
 					onSuccess={onSuccess}
 					handleVerify={handleProof}
 					verification_level={VerificationLevel.Device}
+					action_description="prove you're a human for Minecraft"
 					autoClose
 				>
 					{({ open }) => 
