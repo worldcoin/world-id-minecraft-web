@@ -16,7 +16,6 @@ export default function handler(
   req: NextApiRequest,
   res: NextApiResponse<VerifyReply>
 ) {
-  console.log("Received request to verify credential:\n", req.body);
   const verifyEndpoint = `${process.env.NEXT_PUBLIC_WLD_API_BASE_URL}/api/v1/verify/${process.env.NEXT_PUBLIC_APP_ID}`;
   const req_uuid = req.body.signal;
   const reqBody = {
@@ -27,7 +26,6 @@ export default function handler(
     action: req.body.action,
     signal: req.body.signal,
   };
-  console.log("Sending request to World ID /verify endpoint:\n", reqBody);
   fetch(verifyEndpoint, {
     method: "POST",
     headers: {
@@ -40,7 +38,7 @@ export default function handler(
       url: process.env.REDIS_URL,
       socket: { tls: true },
     })
-      .on("error", (err) => console.log("Redis Client Error", err))
+      .on("error", (err) => console.error("Redis Client Error", err))
       .connect();
     if (verifyRes.status == 200) {
       client.set(req_uuid, req.body.verification_level, { EX: 60 * 15 });
